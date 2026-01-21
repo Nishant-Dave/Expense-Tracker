@@ -29,3 +29,13 @@ class expenseListView(LoginRequiredMixin, ListView):
         context['remaining_balance'] = remaining_balance
 
         return context
+    
+class ExpenseCreateView(LoginRequiredMixin, CreateView):
+    model = Expense
+    template_name = 'expenses/expense_form.html'
+    fields = ['amount', 'description', 'category', 'date']
+    success_url = reverse_lazy('expenses:expense-list')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
