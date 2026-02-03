@@ -1,0 +1,24 @@
+<h1>My Expenses</h1>
+
+<p><b>Monthly Budget:</b> {{ monthly_budget }}</p>
+<p><b>Total Spent:</b> {{ total_spent }}</p>
+<p><b>Remaining Balance:</b> {{ remaining_balance }}</p>
+
+<p>
+  <a href="{% url 'expenses:expense-add' %}">+ Add Expense</a>
+</p>
+
+<hr />
+
+<ul>
+  {% for expense in expenses %}
+    <li>
+      {{ expense.date }} | {{ expense.category }} | ₹{{ expense.amount }}
+      - {{ expense.description }}
+      <a href="{% url 'expenses:expense-edit' expense.pk %}">Edit</a>
+      <a href="{% url 'expenses:expense-delete' expense.pk %}">Delete</a>
+    </li>
+  {% empty %}
+    <li>No expenses yet.</li>
+  {% endfor %}
+</ul>
