@@ -11,21 +11,26 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+import dj_database_url
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables
+load_dotenv(os.path.join(BASE_DIR.parent, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-1%a^!6tcox^x$vy+%#gr@ul!tw1iauhvwy)swmb$sco^!8)&@@'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-default-key-replace-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') if os.environ.get('ALLOWED_HOSTS') else ['localhost', '127.0.0.1', 'testserver']
 
 
 # Application definition
@@ -33,6 +38,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'accounts',
     'expenses',
+    'dashboard',
     
     'django.contrib.admin',
     'django.contrib.auth',
@@ -41,6 +47,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
+    'crispy_forms',
+    'crispy_bootstrap5',
 ]
 
 MIDDLEWARE = [
@@ -77,10 +85,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
 
 
@@ -129,6 +138,9 @@ AUTH_USER_MODEL = 'accounts.User'
 
 # auth_user_model = 'accounts.User'
 
-login_url = 'accounts:login'
-login_redirect_url = 'expenses:expense-list'
-logout_redirect_url = 'accounts:login'
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'expenses:expense-list'
+LOGOUT_REDIRECT_URL = 'dashboard:home'
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"

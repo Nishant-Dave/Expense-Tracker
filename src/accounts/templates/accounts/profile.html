@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row g-4 mt-2">
+    <!-- Left Column: User Overview -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body text-center p-4">
+                <div class="mb-4">
+                    {% if user.profile_avatar == 'avatar1' %}
+                    <i class="bi bi-person-circle text-primary" style="font-size: 5rem;"></i>
+                    {% elif user.profile_avatar == 'avatar2' %}
+                    <i class="bi bi-person-fill-check text-success" style="font-size: 5rem;"></i>
+                    {% elif user.profile_avatar == 'avatar3' %}
+                    <i class="bi bi-incognito text-dark" style="font-size: 5rem;"></i>
+                    {% elif user.profile_avatar == 'avatar4' %}
+                    <i class="bi bi-emoji-smile text-warning" style="font-size: 5rem;"></i>
+                    {% elif user.profile_avatar == 'avatar5' %}
+                    <i class="bi bi-robot text-info" style="font-size: 5rem;"></i>
+                    {% else %}
+                    <i class="bi bi-person-bounding-box text-secondary" style="font-size: 5rem;"></i>
+                    {% endif %}
+                </div>
+
+                <h4 class="card-title fw-bold">{{ user.username }}</h4>
+                <p class="text-muted mb-4">{{ user.email|default:"No email provided" }}</p>
+
+                <hr class="my-4">
+
+                <div class="d-grid gap-2">
+                    <a href="{% url 'accounts:password_change' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-key me-2"></i>Change Password
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Profile Form -->
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white border-0 pt-4 pb-0">
+                <h4 class="card-title mb-0">Edit Profile Details</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-save me-2"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

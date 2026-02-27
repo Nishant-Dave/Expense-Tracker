@@ -1,60 +1,75 @@
-from django.shortcuts import render
+from django.views import generic
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, DetailView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Sum
 from .models import Expense
+from .forms import ExpenseForm
 
-
-class ExpenseListView(LoginRequiredMixin, ListView):
+class ExpenseListView(LoginRequiredMixin, generic.ListView):
     model = Expense
     template_name = 'expenses/expense_list.html'
     context_object_name = 'expenses'
 
     def get_queryset(self):
-        return Expense.objects.filter(user=self.request.user).order_by('-date')
+        return Expense.objects.filter(user=self.request.user)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        
-        total_spent = (
-            Expense.objects.filter(user=self.request.user)
-            .aggregate(total=Sum('amount'))
-            .get('total') or 0
-        )
-        budget = self.request.user.monthly_budget or 0
-        remaining_balance = budget - total_spent
-        context['total_spent'] = total_spent
-        context['monthly_budget'] = budget
-        context['remaining_balance'] = remaining_balance
-
-        return context
-    
-class ExpenseCreateView(LoginRequiredMixin, CreateView):
+class ExpenseCreateView(LoginRequiredMixin, generic.CreateView):
     model = Expense
+    form_class = ExpenseForm
     template_name = 'expenses/expense_form.html'
-    fields = ['amount', 'description', 'category', 'date']
     success_url = reverse_lazy('expenses:expense-list')
 
     def form_valid(self, form):
         form.instance.user = self.request.user
         return super().form_valid(form)
-    
-class ExpenseUpdateView(LoginRequiredMixin, DetailView):
+
+class ExpenseUpdateView(LoginRequiredMixin, generic.UpdateView):
     model = Expense
+    form_class = ExpenseForm
     template_name = 'expenses/expense_form.html'
-    fields = ['amount', 'description', 'category', 'date']
     success_url = reverse_lazy('expenses:expense-list')
 
     def get_queryset(self):
-        # Security: to prevent editing other's expense data'
-        return Expense.objects.filter(user=self.request.user) 
+        return Expense.objects.filter(user=self.request.user)
 
-class ExpenseDeleteView(LoginRequiredMixin, DeleteView):
+class ExpenseDeleteView(LoginRequiredMixin, generic.DeleteView):
     model = Expense
     template_name = 'expenses/expense_confirm_delete.html'
     success_url = reverse_lazy('expenses:expense-list')
 
     def get_queryset(self):
-        # Security: to prevent deleting other's expense data'
-        return Expense.objects.filter(user=self.request.user)    
+        return Expense.objects.filter(user=self.request.user)
+
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+import pandas as pd
+
+@login_required
+def export_expenses(request):
+    expenses = Expense.objects.filter(user=request.user).values(
+        'date', 'category', 'amount', 'description'
+    )
+    
+    # Create DataFrame
+    df = pd.DataFrame(list(expenses))
+    
+    if not df.empty:
+        # Map category codes to display values
+        category_dict = dict(Expense.CATEGORY_CHOICES)
+        df['category'] = df['category'].map(category_dict)
+        
+        # Rename columns for the actual CSV header
+        df = df.rename(columns={
+            'date': 'Date',
+            'category': 'Category',
+            'amount': 'Amount',
+            'description': 'Description'
+        })
+    
+    # Create the HttpResponse object with the appropriate CSV header.
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="expenses_report.csv"'
+    
+    # Export explicitly without Pandas arbitrary numerical indices
+    df.to_csv(response, index=False)
+    
+    return response

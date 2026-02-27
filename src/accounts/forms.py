@@ -2,23 +2,12 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import User
 
+class CustomUserCreationForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = UserCreationForm.Meta.fields + ('phone_number', 'city', 'monthly_budget', 'profile_avatar')
 
-class SignUpForm(UserCreationForm):
+class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = (
-            "username",
-            "email",
-            "phone_number",
-            "city",
-            "monthly_budget",
-            "profile_avatar",
-            "password1",
-            "password2",
-        )
-
-
-class ProfileUpdateForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ("city", "monthly_budget", "profile_avatar")
+        fields = ('email', 'phone_number', 'city', 'monthly_budget', 'profile_avatar')

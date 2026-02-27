@@ -1,9 +1,0 @@
-<h1>Edit Profile</h1>
-
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Update</button>
-</form>
-
-<p><a href="{% url 'expenses:expense-list' %}">Back to Dashboard</a></p>

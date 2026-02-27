@@ -1,22 +1,27 @@
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views import generic
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .forms import CustomUserCreationForm, UserUpdateForm
 
-from .forms import SignUpForm, ProfileUpdateForm
-from .models import User
+class SignUpView(generic.CreateView):
+    form_class = CustomUserCreationForm
+    success_url = reverse_lazy('accounts:login')
+    template_name = 'accounts/signup.html'
 
-
-class SignUpView(CreateView):
-    form_class = SignUpForm
-    template_name = "accounts/signup.html"
-    success_url = reverse_lazy("login")
-
-
-class ProfileUpdateView(LoginRequiredMixin, UpdateView):
-    model = User
-    form_class = ProfileUpdateForm
-    template_name = "accounts/profile_edit.html"
-    success_url = reverse_lazy("expenses:list")
-
-    def get_object(self):
-        return self.request.user
+@login_required
+def profile_view(request):
+    if request.method == 'POST':
+        form = UserUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully!')
+            return redirect('accounts:profile')
+    else:
+        form = UserUpdateForm(instance=request.user)
+        
+    context = {
+        'form': form
+    }
+    return render(request, 'accounts/profile.html', context)

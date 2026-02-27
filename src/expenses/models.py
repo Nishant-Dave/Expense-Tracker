@@ -8,7 +8,7 @@ class Expense(models.Model):
         ('TRANSPORT', 'Transport'),
         ('RENT', 'Rent'),
         ('EMI', 'EMI'),
-        ('ENTERTAINMENT', 'Entertainment'),
+        ('FUEL', 'Fuel'),
         ('OTHER', 'Other'),
     ]
 
