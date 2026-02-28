@@ -39,37 +39,36 @@ class ExpenseDeleteView(LoginRequiredMixin, generic.DeleteView):
     def get_queryset(self):
         return Expense.objects.filter(user=self.request.user)
 
+import csv
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-import pandas as pd
 
 @login_required
 def export_expenses(request):
+    # Create the HttpResponse object with the appropriate CSV header.
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="expenses_report.csv"'
+
+    writer = csv.writer(response)
+    # Write the header row
+    writer.writerow(['Date', 'Category', 'Amount', 'Description'])
+
+    # Get data
     expenses = Expense.objects.filter(user=request.user).values(
         'date', 'category', 'amount', 'description'
     )
     
-    # Create DataFrame
-    df = pd.DataFrame(list(expenses))
-    
-    if not df.empty:
-        # Map category codes to display values
-        category_dict = dict(Expense.CATEGORY_CHOICES)
-        df['category'] = df['category'].map(category_dict)
-        
-        # Rename columns for the actual CSV header
-        df = df.rename(columns={
-            'date': 'Date',
-            'category': 'Category',
-            'amount': 'Amount',
-            'description': 'Description'
-        })
-    
-    # Create the HttpResponse object with the appropriate CSV header.
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="expenses_report.csv"'
-    
-    # Export explicitly without Pandas arbitrary numerical indices
-    df.to_csv(response, index=False)
-    
+    # Map category codes to display values
+    category_dict = dict(Expense.CATEGORY_CHOICES)
+
+    # Write data rows
+    for expense in expenses:
+        category_display = category_dict.get(expense['category'], expense['category'])
+        writer.writerow([
+            expense['date'],
+            category_display,
+            expense['amount'],
+            expense['description']  # May be empty string but handled gracefully by csv module
+        ])
+
     return response
