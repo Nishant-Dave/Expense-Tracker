@@ -9,17 +9,19 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/wsgi/
 
 import os
 import sys
+from pathlib import Path
+
+# 1. Calculate the absolute path to your 'src' directory
+SRC_DIR = Path(__file__).resolve().parent.parent
+
+# 2. FORCE Python to search the 'src' directory FIRST
+sys.path.insert(0, str(SRC_DIR))
 
 from django.core.wsgi import get_wsgi_application
-
-# --- ADDED FOR VERCEL ---
-# This calculates the path to the 'src' folder and tells Python to look inside it
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# ------------------------
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 application = get_wsgi_application()
 
-# Vercel sometimes expects the WSGI application to be named 'app' instead of 'application'
+# 3. Vercel's serverless functions specifically look for a variable named 'app'
 app = application
