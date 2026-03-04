@@ -10,7 +10,20 @@ class ExpenseListView(LoginRequiredMixin, generic.ListView):
     context_object_name = 'expenses'
 
     def get_queryset(self):
-        return Expense.objects.filter(user=self.request.user)
+        queryset = Expense.objects.filter(user=self.request.user)
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+        if start_date:
+            queryset = queryset.filter(date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(date__lte=end_date)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['start_date'] = self.request.GET.get('start_date', '')
+        context['end_date'] = self.request.GET.get('end_date', '')
+        return context
 
 class ExpenseCreateView(LoginRequiredMixin, generic.CreateView):
     model = Expense
@@ -54,7 +67,16 @@ def export_expenses(request):
     writer.writerow(['Date', 'Category', 'Amount', 'Description'])
 
     # Get data
-    expenses = Expense.objects.filter(user=request.user).values(
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    expenses_qs = Expense.objects.filter(user=request.user)
+    
+    if start_date:
+        expenses_qs = expenses_qs.filter(date__gte=start_date)
+    if end_date:
+        expenses_qs = expenses_qs.filter(date__lte=end_date)
+        
+    expenses = expenses_qs.values(
         'date', 'category', 'amount', 'description'
     )
     
