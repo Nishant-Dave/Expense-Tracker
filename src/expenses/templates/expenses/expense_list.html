@@ -35,7 +35,7 @@
                             <span class="badge bg-secondary">{{ expense.get_category_display }}</span>
                         </td>
                         <td class="py-3 align-middle text-muted">{{ expense.description|default:"-" }}</td>
-                        <td class="py-3 align-middle fw-bold">${{ expense.amount }}</td>
+                        <td class="py-3 align-middle fw-bold">₹ {{ expense.amount }}</td>
                         <td class="px-4 py-3 text-end align-middle">
                             <a href="{% url 'expenses:expense-edit' expense.pk %}"
                                 class="btn btn-sm btn-outline-primary" title="Edit">

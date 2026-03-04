@@ -20,7 +20,7 @@
                             <h6 class="card-subtitle text-muted text-uppercase fw-bold">Total Expenses</h6>
                             <i class="bi bi-graph-down-arrow text-danger fs-4"></i>
                         </div>
-                        <h2 class="card-title text-danger fw-bold mb-0">${{ total_expense }}</h2>
+                        <h2 class="card-title text-danger fw-bold mb-0">₹ {{ total_expense }}</h2>
                     </div>
                 </div>
             </div>
@@ -33,8 +33,8 @@
                             <h6 class="card-subtitle text-muted text-uppercase fw-bold">Remaining Budget</h6>
                             <i class="bi bi-wallet2 text-success fs-4"></i>
                         </div>
-                        <h2 class="card-title text-success fw-bold mb-0">${{ remaining_balance }}</h2>
-                        <small class="text-muted d-block mt-2">of ${{ user.monthly_budget }} monthly limit</small>
+                        <h2 class="card-title text-success fw-bold mb-0">₹ {{ remaining_balance }}</h2>
+                        <small class="text-muted d-block mt-2">of ₹ {{ user.monthly_budget }} monthly limit</small>
                     </div>
                 </div>
             </div>
