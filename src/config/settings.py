@@ -15,6 +15,7 @@ import os
 import dj_database_url
 from dotenv import load_dotenv
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -88,10 +89,13 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
+        # This will grab the Neon URL from your .env file or Vercel
+        # If the URL is missing or commented out, it safely falls back to local SQLite
+        default=os.environ.get('DATABASE_URL', f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
         conn_max_age=600,
         conn_health_checks=True,
     )
+# 'default': dj_database_url.parse('postgresql://neondb_owner:npg_bBNtn2C0TlWJ@ep-old-pond-a1k5hyl7-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require')
 }
 
 
